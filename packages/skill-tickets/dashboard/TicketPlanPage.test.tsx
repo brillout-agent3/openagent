@@ -40,11 +40,43 @@ describe('TicketPlanPage (#685)', () => {
     const host = render(PLAN)
     await openMenu(await screen.findByRole('button', { name: 'More' }))
     fireEvent.click(await screen.findByText('Edit ticket'))
-    expect(host.openPage).toHaveBeenCalledWith('tickets', [SLUG], 'p1')
+    expect(host.openPage).toHaveBeenCalledWith('tickets', [SLUG], 'p1', { beside: true })
     cleanup()
     renderWithHost(<TicketDetailPage projectId="p1" slug={SLUG} />, host)
     expect(await screen.findByRole('heading', { name: 'Edit ticket' })).toBeTruthy()
     expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Do the thing')
+  })
+
+  // The shell carries a return across pages opened beside each other (its App tests): from either
+  // of a ticket's pages, the list the ticket was opened from is reached by Back, as it was left.
+  test('the ticket\'s Plan tab opens beside the ticket, and its crumb "Tickets" goes back to the list', async () => {
+    const host = fakeHost({ p1: { [`show ${SLUG} --local`]: { ok: true, ticket: TICKET, plan: PLAN } } })
+    renderWithHost(<TicketDetailPage projectId="p1" slug={SLUG} />, host)
+    fireEvent.click(await screen.findByRole('tab', { name: 'Plan' }))
+    expect(host.openPage).toHaveBeenCalledWith('tickets', [SLUG, 'plan'], 'p1', { beside: true })
+    cleanup()
+    renderWithHost(<TicketPlanPage projectId="p1" slug={SLUG} />, host)
+    fireEvent.click(await screen.findByRole('button', { name: 'Tickets' }))
+    expect(host.backToPage).toHaveBeenCalledWith('tickets')
+  })
+
+  test.each([
+    ['More → Edit ticket, then Cancel', async () => {
+      await openMenu(await screen.findByRole('button', { name: 'More' }))
+      fireEvent.click(await screen.findByText('Edit ticket'))
+    }, () => fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))],
+    ['crumb to the ticket', async () => fireEvent.click(await screen.findByRole('button', { name: 'Do the thing' })), () => {}],
+  ])('the Plan tab\'s %s opens the ticket beside it, whose "Tickets" goes back to the list', async (_, leave, onTicket) => {
+    const host = fakeHost({ p1: { [`show ${SLUG} --local`]: { ok: true, ticket: TICKET, plan: PLAN } } })
+    renderWithHost(<TicketPlanPage projectId="p1" slug={SLUG} />, host)
+    await leave()
+    expect(host.openPage).toHaveBeenCalledWith('tickets', [SLUG], 'p1', { beside: true })
+    cleanup()
+    renderWithHost(<TicketDetailPage projectId="p1" slug={SLUG} />, host)
+    await screen.findByRole('button', { name: 'Tickets' })
+    onTicket()
+    fireEvent.click(screen.getByRole('button', { name: 'Tickets' }))
+    expect(host.backToPage).toHaveBeenCalledWith('tickets')
   })
 
   test('a ticket with no plan says so in one line, and offers the press that has an agent write it', async () => {

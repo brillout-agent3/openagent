@@ -25,7 +25,7 @@ export function TicketPlanPage({
   const onBack = () => host.backToPage('tickets')
 
   return (
-    <TicketPageShell onBack={onBack} crumbs={ticket ? [{ label: ticket.title, onOpen: () => host.openPage('tickets', [ticket.file], projectId) }, { label: 'Plan' }] : []}>
+    <TicketPageShell onBack={onBack} crumbs={ticket ? [{ label: ticket.title, onOpen: () => host.openPage('tickets', [ticket.file], projectId, { beside: true }) }, { label: 'Plan' }] : []}>
       <Slot of={{ state, value: read }} shape={<TicketPageShape />}>
         {read =>
           read && 'error' in read ? (

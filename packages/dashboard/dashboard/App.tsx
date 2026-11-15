@@ -174,7 +174,7 @@ export function App() {
   // Every navigation keeps the picked project, and one into another project's page, or into a
   // page in a named project, picks that project: the pages never show a project the select does not name.
   const scoped = (next: Route): Route => ({ ...next, ...(scope ? { scope: next.scope ?? next.projectId ?? scope } : {}) })
-  const go = (next: Route) => navigate(scoped(next))
+  const go = (next: Route, options?: { beside?: boolean }) => navigate(scoped(next), options)
   /** Where `go` would take the page: a link's address. */
   const hrefOf = (next: Route) => formatRoute(scoped(next), addresses)
   /** A module's page, at a sub-path, in `inProject` or the picked project. */
@@ -382,7 +382,7 @@ export function App() {
     ...DAEMON_SERVICES,
     openAgent: selectAgentInProject,
     agentHref: (inProject, id) => hrefOf({ projectId: inProject, agentId: id }),
-    openPage: (segment, path, inProject) => go(pageRoute(segment, path, inProject)),
+    openPage: (segment, path, inProject, options) => go(pageRoute(segment, path, inProject), options),
     adjustPage: (path, query) => adjust(path ? { ...route, pagePath: path } : route, query),
     pageHref: (segment, path, inProject) => hrefOf(pageRoute(segment, path, inProject)),
     backToPage: (segment, path = [], inProject) =>

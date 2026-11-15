@@ -10,10 +10,10 @@ import { useTicket } from './lib/use-ticket.js'
 /** The ticket whose page opens on its edit form: Edit ticket was chosen on its plan's tab. */
 let editOnOpen: string | null = null
 
-/** Open ticket `file`'s page on its edit form, from its plan's tab: the form edits the ticket, which that tab shows. */
+/** Open ticket `file`'s page on its edit form, from its plan's tab, beside it: the form edits the ticket, which that tab shows. */
 export function openToEdit(host: ModuleHost, projectId: string, file: string): void {
   editOnOpen = file
-  host.openPage('tickets', [file], projectId)
+  host.openPage('tickets', [file], projectId, { beside: true })
 }
 
 // One ticket's own page: its whole text, not just the head the list row reads, under the head it

@@ -93,7 +93,8 @@ export function TicketHeader({
     await run(() => host.startRun(projectId, prompt), failure)
     setStarting(null)
   }
-  const open = (path: string[]) => host.openPage('tickets', path, projectId)
+  // The other tab is a page of the same ticket: a return from it goes where this one came from.
+  const openTab = (path: string[]) => host.openPage('tickets', path, projectId, { beside: true })
   const more = [
     ...(onEdit ? [{ label: 'Edit ticket', Icon: Pencil, onSelect: onEdit }] : []),
     ...(claimed ? [{ label: 'Release the claim', Icon: LockOpen, onSelect: () => (working ? setAsking(true) : void release()) }] : []),
@@ -167,7 +168,7 @@ export function TicketHeader({
             aria-selected={tab === name}
             // Said as read: the gap before "none yet" is only drawn.
             aria-label={name === 'plan' && !ticket.planned ? 'Plan, none yet' : undefined}
-            onClick={() => tab !== name && open(name === 'ticket' ? [ticket.file] : [ticket.file, 'plan'])}
+            onClick={() => tab !== name && openTab(name === 'ticket' ? [ticket.file] : [ticket.file, 'plan'])}
             className={cn('focus-ring -mb-px flex h-9 items-center rounded-t-sm border-b-2 font-medium transition-colors', tab === name ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
           >
             {name === 'ticket' ? 'Ticket' : 'Plan'}
